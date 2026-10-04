@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#4f46e5">
+<title>Jadual Mengajar Cikgu Rabbani</title>
+<style>
+:root{
+  --bg:#f5f7fb;--panel:#fff;--text:#172033;--muted:#667085;--line:#e5e7eb;
+  --accent:#4f46e5;--accent2:#eef2ff;--danger:#ef4444;--shadow:0 8px 30px rgba(15,23,42,.07)
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+.app{min-height:100vh;padding:18px;max-width:1500px;margin:auto}
+.topbar{display:flex;gap:14px;align-items:stretch;margin-bottom:15px}
+.hero{flex:1;background:linear-gradient(135deg,#eef2ff,#fff);border:1px solid #dfe4ff;border-radius:20px;padding:18px;box-shadow:var(--shadow)}
+.hero h1{font-size:22px;margin:0 0 3px}
+.hero p{margin:0;color:var(--muted);font-size:13px}
+.clock{font-size:34px;font-weight:850;letter-spacing:-1.5px;margin-top:10px}
+.live{display:inline-flex;align-items:center;gap:7px;margin-top:4px;font-size:12px;color:#475467}
+.live-dot{width:8px;height:8px;background:#22c55e;border-radius:50%;box-shadow:0 0 0 4px #dcfce7}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;min-width:350px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;box-shadow:var(--shadow)}
+.stat b{display:block;font-size:22px}.stat span{font-size:11px;color:var(--muted)}
+.layout{display:grid;grid-template-columns:205px minmax(0,1fr);gap:15px}
+.sidebar{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:12px;height:max-content;box-shadow:var(--shadow)}
+.sidebar h4{font-size:10px;text-transform:uppercase;letter-spacing:.09em;color:#98a2b3;margin:12px 9px 7px}
+.nav{width:100%;border:0;background:transparent;padding:11px 12px;border-radius:11px;text-align:left;font-weight:750;color:#475467;margin:2px 0}
+.nav:hover{background:#f2f4f7}.nav.active{background:var(--accent2);color:#3730a3}
+.main{min-width:0}
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.toolbar h2{font-size:18px;margin:0}
+.actions{display:flex;gap:7px;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:9px 12px;font-weight:750;font-size:12px;color:var(--text)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.danger{color:#b42318}
+.schedule-wrap{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:17px;box-shadow:var(--shadow)}
+.schedule{display:grid;grid-template-columns:82px repeat(15,minmax(83px,1fr));min-width:1325px}
+.cell{border-right:1px solid var(--line);border-bottom:1px solid var(--line);min-height:76px;padding:7px}
+.header{background:#f8fafc;text-align:center;font-weight:800;font-size:11px;min-height:70px}
+.header small{display:block;font-weight:500;color:var(--muted);line-height:1.25;margin-top:3px}
+.daycell{background:#f8fafc;display:flex;justify-content:center;align-items:center;font-size:12px;font-weight:850}
+.lesson{border-radius:11px;min-height:60px;padding:8px}
+.lesson .subject{font-size:9px;font-weight:850;letter-spacing:.04em;opacity:.72}
+.lesson .class{font-size:14px;font-weight:900;margin-top:5px}
+.lesson .time{font-size:9px;color:#475467;margin-top:3px}
+.c1{background:#dbeafe}.c2{background:#dcfce7}.c3{background:#fef3c7}
+.c4{background:#fce7f3}.c5{background:#ede9fe}.c6{background:#ffedd5}
+.relief{background:repeating-linear-gradient(135deg,#fff7ed,#fff7ed 8px,#ffedd5 8px,#ffedd5 16px);border:1px dashed #fb923c}
+.now{outline:3px solid #4f46e5;outline-offset:-3px}
+.panels{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px;box-shadow:var(--shadow)}
+.card h3{font-size:14px;margin:0 0 10px}
+.legend{display:flex;gap:8px;flex-wrap:wrap}.tag{display:flex;align-items:center;gap:6px;font-size:11px}
+.swatch{width:13px;height:13px;border-radius:4px}
+.alert{border:1px solid #fed7aa;background:#fff7ed;border-radius:10px;padding:9px;margin:5px 0;font-size:12px}
+.empty{font-size:12px;color:var(--muted)}
+.notes{margin-top:12px}
+textarea{width:100%;min-height:105px;border:1px solid var(--line);border-radius:11px;padding:10px;resize:vertical;background:var(--panel);color:var(--text);outline:none}
+textarea:focus,input:focus,select:focus{border-color:#a5b4fc;box-shadow:0 0 0 3px #eef2ff}
+.modal{display:none;position:fixed;inset:0;background:rgba(15,23,42,.4);align-items:center;justify-content:center;padding:18px;z-index:20}
+.modal.show{display:flex}.modalbox{background:var(--panel);width:min(450px,100%);border-radius:18px;padding:18px}
+.modalbox h3{margin:0 0 14px}.field{margin-bottom:11px}.field label{display:block;font-size:12px;font-weight:750;margin-bottom:5px}
+.field input,.field select{width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--text)}
+.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:13px}
+.toast{position:fixed;right:18px;bottom:18px;background:#172033;color:#fff;padding:11px 14px;border-radius:11px;font-size:12px;opacity:0;transform:translateY(8px);transition:.2s;z-index:30}
+.toast.show{opacity:1;transform:translateY(0)}
+.dark{--bg:#0b1120;--panel:#111827;--text:#f3f4f6;--muted:#9ca3af;--line:#263244;--accent2:#1e1b4b;--shadow:none}
+.dark .hero{background:linear-gradient(135deg,#171d3b,#111827);border-color:#30375c}
+.dark .header,.dark .daycell{background:#151d2b}
+.dark .alert{background:#2b2114;border-color:#6b4a20}
+@media(max-width:850px){.topbar{flex-direction:column}.stats{min-width:0}.layout{grid-template-columns:1fr}.sidebar{display:flex;overflow-x:auto;gap:4px}.sidebar h4{display:none}.nav{min-width:100px}.panels{grid-template-columns:1fr}}
+@media(max-width:560px){.app{padding:10px}.stats{grid-template-columns:1fr 1fr 1fr}.stat{padding:10px}.stat b{font-size:18px}.clock{font-size:28px}}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="topbar">
+    <section class="hero">
+      <h1>📚 Jadual Mengajar</h1>
+      <p>Dashboard interaktif • SMK Dato' Undang Musa Al-Haj</p>
+      <div class="clock" id="clock">--:--:--</div>
+      <div class="live"><i class="live-dot"></i><span id="liveText">Masa live</span></div><div class="live" style="margin-top:7px">🎨 <span id="themeText">Tema siang</span></div>
+    </section>
+    <section class="stats">
+      <div class="stat"><b id="todayCount">0</b><span>Waktu hari ini</span></div>
+      <div class="stat"><b id="classCount">0</b><span>Kelas hari ini</span></div>
+      <div class="stat"><b id="reliefCount">0</b><span>Relief ditambah</span></div>
+    </section>
+  </div>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <h4>Hari</h4>
+      <button class="nav active" data-day="Isnin">📘 Isnin</button>
+      <button class="nav" data-day="Selasa">📗 Selasa</button>
+      <button class="nav" data-day="Rabu">📙 Rabu</button>
+      <button class="nav" data-day="Khamis">📕 Khamis</button>
+      <button class="nav" data-day="Jumaat">📒 Jumaat</button>
+      <h4>Pantas</h4>
+      <button class="nav" id="todayBtn">📅 Hari ini</button>
+      <button class="nav" id="reliefBtn">➕ Tambah Relief</button>
+      <button class="nav" id="noteBtn">📝 Catatan</button>
+      <button class="nav" id="darkBtn">🌙 Mod Malam</button>
+    </aside>
+
+    <main class="main">
+      <div class="toolbar">
+        <h2 id="dayTitle">Isnin</h2>
+        <div class="actions">
+          <button class="btn" id="nowBtn">⏱ Waktu sekarang</button>
+          <button class="btn" id="notifyBtn">🔔 Notifikasi</button>
+          <button class="btn danger" id="clearBtn">↺ Reset data</button>
+        </div>
+      </div>
+
+      <div class="schedule-wrap" id="scheduleWrap">
+        <div class="schedule" id="scheduleGrid"></div>
+      </div>
+
+      <div class="panels">
+        <section class="card">
+          <h3>🎨 Kod Warna Kelas</h3>
+          <div class="legend">
+            <span class="tag"><i class="swatch c1"></i>1C</span>
+            <span class="tag"><i class="swatch c2"></i>1D</span>
+            <span class="tag"><i class="swatch c3"></i>4B</span>
+            <span class="tag"><i class="swatch c4"></i>4D</span>
+            <span class="tag"><i class="swatch c5"></i>5C</span>
+            <span class="tag"><i class="swatch c6"></i>4C/4D/4E</span>
+          </div>
+        </section>
+        <section class="card">
+          <h3>🔔 Notifikasi</h3>
+          <div id="alerts" class="empty">Memeriksa jadual...</div>
+        </section>
+      </div>
+
+      <section class="card notes">
+        <h3>📝 Catatan Hari Ini</h3>
+        <textarea id="notes" placeholder="Contoh: bawa buku teks, semak latihan, mesyuarat, aktiviti kelas..."></textarea>
+      </section>
+    </main>
+  </div>
+</div>
+
+<div class="modal" id="modal">
+  <div class="modalbox">
+    <h3>➕ Tambah Waktu Relief</h3>
+    <form id="reliefForm">
+      <div class="field"><label>Hari</label><select id="reliefDay">
+        <option>Isnin</option><option>Selasa</option><option>Rabu</option><option>Khamis</option><option>Jumaat</option>
+      </select></div>
+      <div class="field"><label>Waktu</label><select id="reliefPeriod"></select></div>
+      <div class="field"><label>Kelas / Tugasan</label><input id="reliefTask" required placeholder="Contoh: Relief 4A"></div>
+      <div class="field"><label>Catatan</label><input id="reliefRemark" placeholder="Contoh: Latihan sendiri"></div>
+      <div class="modal-actions"><button type="button" class="btn" id="cancelRelief">Batal</button><button class="btn primary">Simpan Relief</button></div>
+    </form>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(() => {
+  const periods = [
+    ["7:40","8:10"],["8:10","8:40"],["8:40","9:10"],["9:10","9:40"],
+    ["9:40","10:10"],["10:10","10:40"],["10:40","11:10"],["11:10","11:40"],
+    ["11:40","12:10"],["12:10","12:40"],["12:40","1:10"],["1:10","1:40"],
+    ["1:40","2:10"],["2:10","2:40"],["2:40","3:10"]
+  ];
+
+  // Data jadual berdasarkan gambar jadual terjana 19/6/2026.
+  const schedule = {
+    Isnin: {
+      10:{s:"SJ",c:"4B",k:"c3"}, 11:{s:"SJ",c:"4B",k:"c3"}
+    },
+    Selasa: {
+      1:{s:"PJPK",c:"4C/4D/4E",k:"c6"},2:{s:"PJPK",c:"4C/4D/4E",k:"c6"},
+      6:{s:"SJ",c:"1C",k:"c1"},7:{s:"SJ",c:"1C",k:"c1"},
+      8:{s:"SJ",c:"5C",k:"c5"},9:{s:"SJ",c:"5C",k:"c5"},
+      12:{s:"SJ",c:"4D",k:"c4"},13:{s:"SJ",c:"4D",k:"c4"}
+    },
+    Rabu: {
+      3:{s:"SJ",c:"1C",k:"c1"},4:{s:"SJ",c:"1C",k:"c1"},
+      6:{s:"SJ",c:"1D",k:"c2"},7:{s:"SJ",c:"1D",k:"c2"},
+      8:{s:"SJ",c:"4B",k:"c3"},9:{s:"SJ",c:"4B",k:"c3"}
+    },
+    Khamis: {
+      1:{s:"SJ",c:"1D",k:"c2"},2:{s:"SJ",c:"1D",k:"c2"},
+      5:{s:"SJ",c:"4D",k:"c4"},6:{s:"SJ",c:"4D",k:"c4"},
+      8:{s:"SJ",c:"4B",k:"c3"},9:{s:"SJ",c:"4B",k:"c3"}
+    },
+    Jumaat: {
+      2:{s:"SJ",c:"5C",k:"c5"},3:{s:"SJ",c:"5C",k:"c5"},
+      5:{s:"SJ",c:"1D",k:"c2"},6:{s:"SJ",c:"1D",k:"c2"},
+      8:{s:"PJPK",c:"4C/4D/4E",k:"c6"},9:{s:"PJPK",c:"4C/4D/4E",k:"c6"}
+    }
+  };
+
+  let day = "Isnin";
+  let reliefs = JSON.parse(localStorage.getItem("jadualRelief") || "{}");
+  let notes = JSON.parse(localStorage.getItem("jadualNotes") || "{}");
+  let themeMode = localStorage.getItem("jadualTheme") || "day";
+
+  const grid = document.getElementById("scheduleGrid");
+  const notesEl = document.getElementById("notes");
+  const toastEl = document.getElementById("toast");
+
+  function applyTheme(){
+    const autoNight = new Date().getHours() >= 19 || new Date().getHours() < 7;
+    const night = themeMode === "night" || (themeMode === "auto" && autoNight);
+    document.body.classList.toggle("dark", night);
+    const btn=document.getElementById("darkBtn");
+    const label=document.getElementById("themeText");
+    if(themeMode==="auto"){btn.textContent="🌓 Auto Siang/Malam";label.textContent=night?"Tema malam • automatik":"Tema siang • automatik";}
+    else if(themeMode==="night"){btn.textContent="☀️ Tukar ke Siang";label.textContent="Tema malam";}
+    else{btn.textContent="🌙 Tukar ke Malam";label.textContent="Tema siang";}
+  }
+  applyTheme();
+
+  function minutes(s){
+    let [h,m]=s.split(":").map(Number);
+    if(h<7) h+=12;
+    return h*60+m;
+  }
+  function showToast(msg){
+    toastEl.textContent=msg;toastEl.classList.add("show");
+    clearTimeout(showToast.t);showToast.t=setTimeout(()=>toastEl.classList.remove("show"),2200);
+  }
+  function render(){
+    document.getElementById("dayTitle").textContent=day;
+    let html='<div class="cell header">Hari</div>';
+    periods.forEach((t,i)=>html+=`<div class="cell header">${i+1}<small>${t[0]}<br>${t[1]}</small></div>`);
+    html+=`<div class="cell daycell">${day}</div>`;
+    for(let p=1;p<=15;p++){
+      const x=schedule[day]?.[p], r=reliefs[day]?.[p];
+      let content="";
+      if(x) content=`<div class="lesson ${x.k}"><div class="subject">${x.s}</div><div class="class">${x.c}</div><div class="time">${periods[p-1][0]} – ${periods[p-1][1]}</div></div>`;
+      else if(r) content=`<div class="lesson relief"><div class="subject">RELIEF</div><div class="class">${escapeHtml(r.task)}</div><div class="time">${periods[p-1][0]} – ${periods[p-1][1]}</div></div>`;
+      html+=`<div class="cell" data-period="${p}">${content}</div>`;
+    }
+    grid.innerHTML=html;
+    notesEl.value=notes[day]||"";
+    updateStats();
+    updateNow();
+  }
+  function escapeHtml(v){
+    return String(v).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+  }
+  function updateStats(){
+    const base=Object.keys(schedule[day]||{}).length;
+    const rel=Object.keys(reliefs[day]||{}).length;
+    document.getElementById("todayCount").textContent=base+rel;
+    document.getElementById("classCount").textContent=new Set(Object.values(schedule[day]||{}).map(x=>x.c)).size;
+    document.getElementById("reliefCount").textContent=Object.values(reliefs).reduce((n,d)=>n+Object.keys(d).length,0);
+  }
+  function updateNow(){
+    const d=new Date(), m=d.getHours()*60+d.getMinutes();
+    const idx=periods.findIndex(t=>m>=minutes(t[0])&&m<minutes(t[1]));
+    grid.querySelectorAll(".cell[data-period]").forEach(el=>el.classList.remove("now"));
+    if(idx>=0){
+      const cell=grid.querySelector(`[data-period="${idx+1}"]`);
+      if(cell) cell.classList.add("now");
+    }
+    const x=idx>=0?schedule[day]?.[idx+1]:null;
+    const r=idx>=0?reliefs[day]?.[idx+1]:null;
+    let next=-1;
+    for(let i=0;i<periods.length;i++) if(minutes(periods[i][0])>m){next=i;break;}
+    let out="";
+    if(x) out+=`<div class="alert">🔵 <b>Sedang berlangsung:</b> ${x.s} ${x.c} · Waktu ${idx+1}</div>`;
+    else if(r) out+=`<div class="alert">🟠 <b>Relief sedang berlangsung:</b> ${escapeHtml(r.task)} · Waktu ${idx+1}</div>`;
+    if(next>=0){
+      const nx=schedule[day]?.[next+1], nr=reliefs[day]?.[next+1];
+      if(nx) out+=`<div class="alert">⏰ <b>Seterusnya:</b> ${nx.s} ${nx.c} · ${periods[next][0]}</div>`;
+      else if(nr) out+=`<div class="alert">⏰ <b>Relief seterusnya:</b> ${escapeHtml(nr.task)} · ${periods[next][0]}</div>`;
+    }
+    document.getElementById("alerts").innerHTML=out||'<div class="empty">Tiada kelas atau relief pada waktu ini.</div>';
+    document.getElementById("liveText").textContent=idx>=0?`Waktu ${idx+1} sedang berjalan`:"Di luar waktu PdP";
+  }
+  function tick(){
+    const d=new Date();
+    if(themeMode==="auto") applyTheme();
+    document.getElementById("clock").textContent=d.toLocaleTimeString("ms-MY",{hour12:false});
+    updateNow();
+  }
+
+  document.querySelectorAll("[data-day]").forEach(b=>b.addEventListener("click",()=>{
+    day=b.dataset.day;
+    document.querySelectorAll("[data-day]").forEach(x=>x.classList.toggle("active",x===b));
+    render();
+  }));
+
+  document.getElementById("todayBtn").addEventListener("click",()=>{
+    const names=["Ahad","Isnin","Selasa","Rabu","Khamis","Jumaat","Sabtu"];
+    const n=names[new Date().getDay()];
+    if(schedule[n]){
+      day=n;
+      document.querySelectorAll("[data-day]").forEach(x=>x.classList.toggle("active",x.dataset.day===n));
+      render();
+    } else showToast("Hari ini tiada jadual Isnin–Jumaat.");
+  });
+
+  document.getElementById("nowBtn").addEventListener("click",()=>{
+    const d=new Date(),m=d.getHours()*60+d.getMinutes();
+    const idx=periods.findIndex(t=>m>=minutes(t[0])&&m<minutes(t[1]));
+    if(idx>=0){
+      const cell=grid.querySelector(`[data-period="${idx+1}"]`);
+      cell?.scrollIntoView({behavior:"smooth",inline:"center",block:"nearest"});
+      showToast("Waktu sekarang disorot.");
+    } else showToast("Sekarang di luar waktu PdP.");
+  });
+
+  document.getElementById("notifyBtn").addEventListener("click",()=>{
+    document.getElementById("alerts").scrollIntoView({behavior:"smooth",block:"center"});
+  });
+
+  document.getElementById("darkBtn").addEventListener("click",()=>{
+    if(themeMode==="day") themeMode="night";
+    else if(themeMode==="night") themeMode="auto";
+    else themeMode="day";
+    localStorage.setItem("jadualTheme",themeMode);
+    applyTheme();
+    showToast(themeMode==="auto"?"Tema automatik diaktifkan.":themeMode==="night"?"Tema malam diaktifkan.":"Tema siang diaktifkan.");
+  });
+
+  notesEl.addEventListener("input",()=>{
+    notes[day]=notesEl.value;
+    localStorage.setItem("jadualNotes",JSON.stringify(notes));
+  });
+  document.getElementById("noteBtn").addEventListener("click",()=>{
+    notesEl.focus();notesEl.scrollIntoView({behavior:"smooth",block:"center"});
+  });
+
+  const modal=document.getElementById("modal");
+  const reliefDay=document.getElementById("reliefDay");
+  const reliefPeriod=document.getElementById("reliefPeriod");
+  reliefPeriod.innerHTML=periods.map((t,i)=>`<option value="${i+1}">Waktu ${i+1} · ${t[0]} – ${t[1]}</option>`).join("");
+  document.getElementById("reliefBtn").addEventListener("click",()=>{
+    reliefDay.value=day;modal.classList.add("show");
+  });
+  document.getElementById("cancelRelief").addEventListener("click",()=>modal.classList.remove("show"));
+  document.getElementById("reliefForm").addEventListener("submit",e=>{
+    e.preventDefault();
+    const d=reliefDay.value,p=Number(reliefPeriod.value);
+    reliefs[d]??={};
+    reliefs[d][p]={task:document.getElementById("reliefTask").value.trim(),remark:document.getElementById("reliefRemark").value.trim()};
+    localStorage.setItem("jadualRelief",JSON.stringify(reliefs));
+    modal.classList.remove("show");
+    e.target.reset();
+    showToast("Relief berjaya disimpan.");
+    day=d;document.querySelectorAll("[data-day]").forEach(x=>x.classList.toggle("active",x.dataset.day===d));
+    render();
+  });
+
+  document.getElementById("clearBtn").addEventListener("click",()=>{
+    if(confirm("Padam semua relief dan catatan yang disimpan dalam browser ini?")){
+      reliefs={};notes={};
+      localStorage.removeItem("jadualRelief");localStorage.removeItem("jadualNotes");
+      render();showToast("Data relief dan catatan telah direset.");
+    }
+  });
+
+  render();tick();setInterval(tick,1000);
+})();
+</script>
+</body>
+</html>
